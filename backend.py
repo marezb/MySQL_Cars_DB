@@ -3,13 +3,18 @@ from tkinter import ttk
 import mysql.connector
 from tabulate import tabulate
 import base64
+import time
 from sql_data import *
 
+
+# num_or_rows = tk.StringVar(value=10)
 
 class DisplayWindow(ttk.Frame):
 
     def __init__(self, container, *args, **kwargs):
         super().__init__(container, *args, **kwargs)
+
+        self.num_of_rows = tk.StringVar(value=10)
 
         self.columnconfigure(0, weight=1)
         self.columnconfigure(1, weight=0)
@@ -30,9 +35,9 @@ class DisplayWindow(ttk.Frame):
         self.right_side_buttons = ttk.Frame(self)
         self.right_side_buttons.grid(row=0, column=1, sticky='NSEW')
         self.right_side_buttons.columnconfigure(0, weight=1)
-        self.right_side_buttons.rowconfigure((0,9), weight=0)
+        self.right_side_buttons.columnconfigure(1, weight=0)
+        self.right_side_buttons.rowconfigure((0, 9), weight=0)
         self.right_side_buttons.rowconfigure(10, weight=1)
-
 
         ###############################################################################################################
         # main text widget title
@@ -59,36 +64,52 @@ class DisplayWindow(ttk.Frame):
 
         ###############################################################################################################
         # right side buttons
+
         self.title = ttk.Label(self.right_side_buttons,
-                               text="Query buttons",
-                               justify=tk.RIGHT
-                               )
+                               text="Query buttons", )
         self.title.grid(column=0, row=0, sticky='ew', padx=15, pady=5)
 
+        self.desc1 = ttk.Label(self.right_side_buttons,
+                               text="Amount of rows to show:")
+        self.desc1.grid(column=0, row=1, sticky='ew', padx=15, pady=5)
+
+        self.rows = ttk.Entry(self.right_side_buttons, width=5, textvariable=self.num_of_rows)
+        self.rows.grid(column=1, row=1, sticky='ew', padx=15, pady=5)
+
         self.button_1 = ttk.Button(self.right_side_buttons,
-                                   text='Show Last Transactions',
+                                   text='Last Transactions',
                                    command=self.last_transactions)
-        self.button_1.grid(column=0, row=1, pady=10, padx=15, sticky='ewn')
+        self.button_1.grid(column=0, row=2, pady=10, padx=15, sticky='ewn')
         self.button_2 = ttk.Button(self.right_side_buttons,
-                                   text='Turnover',
+                                   text='Brand Turnover',
                                    command=self.turnover)
-        self.button_2.grid(column=0, row=2, pady=10, padx=15, sticky='ewn')
+        self.button_2.grid(column=0, row=3, pady=10, padx=15, sticky='ewn')
+
+
+        self.text.insert(tk.END, description,)
 
     # function which connects to database then prints result to text window
 
-    def connect_to_db(self, table_headers, sql_query):
+    def connect_to_db(self, table_headers, sql_query, sql_param_01=None, sql_param_02=None):
         query_results = list()
         pasw = base64.b64decode("MVRzY25MQkJiSg==").decode("utf-8")
 
-        # connection to datebase
-        connection = mysql.connector.connect(host='remotemysql.com',
-                                             database='rPxEEccXtK',
-                                             user='rPxEEccXtK',
-                                             password=pasw)
+        # connection to database
+        t1 = time.time()
+        connection = mysql.connector.connect(host='remotemysql.com',database='rPxEEccXtK',
+                                            user='rPxEEccXtK',password=pasw)
+
+        # connection = mysql.connector.connect(host='85.10.205.173',database='west_coast_cars',
+        #                                      user='jack_ryan',password='64609nsf412azda8')
+        print("Connection open")
+
+        limit = int(self.num_of_rows.get())
 
         cursor = connection.cursor()
-        cursor.execute(sql_query)
+        cursor.execute(sql_query, (limit,))
         records = cursor.fetchall()
+
+
 
         # from mysql records we need to prepare list format accepted by 'tabulate' module
         # this is a list within a list, records are divided by comma
@@ -102,18 +123,22 @@ class DisplayWindow(ttk.Frame):
 
         self.text.delete('1.0', tk.END)
         self.text.insert(tk.END, 'MySQL query:\n')
-        self.text.insert(tk.END, sql_query)
-        self.text.insert(tk.END, '\nMySQL query results:\n')
+        self.text.insert(tk.END, sql_query,'\n')
+        self.text.insert(tk.END, '\n\nMySQL query results:\n')
         self.text.insert(tk.END, (f"Total records: {cursor.rowcount}\n\n"))
         self.text.insert(tk.END, tabulate(query_results, table_headers,
-                                                     tablefmt='psql',
-                                                     stralign='right',
-                                                     numalign='right'))
+                                          tablefmt='psql',
+                                          stralign='right',
+                                          numalign='right'))
 
         if connection.is_connected():
             cursor.close()
             connection.close()
             print("Connection closed")
+        t2 = time.time()
+        print(f"Time of operation {((t2 - t1) * 1000):.1f} ms")
+
+
 
     def last_transactions(self):
 
