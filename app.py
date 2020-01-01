@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
-from backend import DisplayWindow
+from main_window import DisplayWindow
 
 # -- Windows only configuration --
 try:
@@ -17,7 +17,7 @@ class WestCoastCars(tk.Tk):
         super().__init__(*args, **kwargs)
         self.title('West Coast Cars')
 
-        self.geometry("1400x800+10+20")
+        self.geometry("1900x900+10+20")
         self.minsize(1100, 800)
         self.columnconfigure(0, weight=1)
         self.rowconfigure(0, weight=1)
@@ -28,7 +28,7 @@ class WestCoastCars(tk.Tk):
 
         self.button_quit = ttk.Button(self.display_window.right_side_buttons,
                                       text='Quit', command=self.destroy)
-        self.button_quit.grid(column=0, row=10, pady=10, padx=15, sticky='EWS')
+        self.button_quit.grid(column=0, row=10, pady=10, padx=15, sticky='EWS',columnspan=4)
 
 
 root = WestCoastCars()
