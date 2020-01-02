@@ -1,8 +1,11 @@
+################################### Last Transactions ################################################
 last_transactions_headers = ['Transaction Date', 'City', 'Brand', 'Brand Category',
                              'Car Age','Car Condition','Price', 'Payment type', 'Salesman']
 
-last_transactions_query_desc = '''Show last transactions with details: date, price, brand name, 
-employee name and type of payment. Requires data from all tables. '''
+last_transactions_query_desc = '''
+Show last transactions with details: date, price, brand name, 
+employee name and type of payment. Requires connection of data from all tables.
+'''
 last_transactions_query = '''
     SELECT
         transaction_date,
@@ -26,7 +29,7 @@ last_transactions_query = '''
                WHEN car_age = 0 THEN 'New Car'
                 ELSE 'Used Car'
             END AS 'condition',
-        CONCAT(price,' $') AS price,
+        CONCAT(FORMAT(price,0),' $') AS price,
         payment_type,
         name as 'Salesman'
     FROM transactions
@@ -40,45 +43,86 @@ last_transactions_query = '''
     ORDER BY transaction_date DESC LIMIT %s
     '''
 
+################################### Brand Turnover ################################################
 
-turnover_headers = ['Brand', 'Turnover']
-turnover_query_desc = '''Which brand generates the biggest turnover? '''
-# turnover_query = '''
-#     SELECT
-#         brand,
-#         CONCAT(SUM(price), ' $') AS turnover
-#     FROM transactions
-#     JOIN makers
-#         ON transactions.maker_id=makers.id
-#     GROUP BY maker_id
-#     ORDER BY turnover DESC LIMIT %s'''
-
+turnover_headers = ['Brand', 'Turnover', 'Average age of sold cars',
+                    'Number of sold cars', 'Average transaction value']
+turnover_query_desc = '''
+Which brand generates the highest turnover?
+What is the average age of sold cars?
+What is the volume of sales per unit?
+What is the average transaction value?
+'''
 turnover_query = '''
-SELECT
-    employees.id,
-    employees.name,
-    SUM(price) AS 'TURNOVER',
-    COUNT(*) AS 'NUM OF TRANSACTIONS',
-    CONCAT(ROUND(AVG(price),2),' $') AS 'AVERAGE TRANSACTION PRICE'
-FROM transactions
-RIGHT JOIN employees
-    ON transactions.employee_id = employees.id
-    WHERE transaction_date BETWEEN '2018-01-01' AND '2018-12-31'
-    GROUP BY employees.id
-    ORDER BY SUM(price) DESC 
-    LIMIT %s'''
+    SELECT
+        brand,
+        CONCAT(FORMAT(SUM(price),0), ' $') as turnover,
+        CONCAT(ROUND(AVG(car_age),1),' years') AS avg_age,
+        COUNT(maker_id) as 'number of sold cars',
+        CONCAT(FORMAT(SUM(price)/COUNT(maker_id),0),' $') AS average_transaction
+    FROM transactions
+    JOIN makers
+        ON transactions.maker_id=makers.id
+    WHERE transaction_date BETWEEN %s AND %s
+    GROUP BY maker_id
+    ORDER BY SUM(price) DESC LIMIT %s
+'''
+
+################################## Payment types #################################################
+
+payment_headers = ['Payment type','Turnover', 'Number of transactions']
+
+payment_query_desc ='''
+Which type of payment generates the highest turnover and which one the lowest?
+'''
+
+payment_query='''
+    SELECT
+        payment_type,
+        CONCAT(FORMAT(SUM(price),0), ' $') AS turnover,
+        COUNT(payment_id) AS num_of_transactions
+    FROM transactions
+    JOIN payments
+        ON transactions.payment_id=payments.id
+    WHERE transaction_date BETWEEN %s AND %s
+    GROUP BY payment_id
+    ORDER BY SUM(price) DESC LIMIT %s
+'''
+
+################################### Employees performance ##############################################
+employees_headers = ['Employee id','Name', 'City of operation', 'Turnover',
+                     'Num of transactions', 'Average transaction value']
+
+employees_query_desc = '''What is the performance of our employees? Who is the best, where she/he operates?'''
+
+employees_guery='''
+    SELECT
+        employees.id,
+        employees.name,
+        employees.city,
+        CONCAT(FORMAT(SUM(price),0), ' $') AS turnover,
+        COUNT(*) AS num_of_transactions,
+        CONCAT(FORMAT(AVG(price),0),' $') AS avg_transaction_value
+    FROM transactions
+    RIGHT JOIN employees
+        ON transactions.employee_id = employees.id
+    WHERE transactions.transaction_date BETWEEN %s AND %s
+        GROUP BY employees.id
+    ORDER BY SUM(price) DESC LIMIT %s
+'''
+
 
 
 application_description = '''
-This tkinter GUI connects with fake database which I created to present MySQL skills. 
-This is a simplified database which represents imaginary company “West Coast Cars” 
-which is selling new and used cars across USA. “WCC” has 61 employees and sells 50 brands.
-Starting from 1st of January 2017 till the end of 2019 company sold 1577 cars
-what is shown in the transactions table.
+This is a fake database which holds data of “West Coast Cars” company.
+"WCC" is selling new and used cars across USA. The company has 60 employees and sells 50 brands.
+Starting from 1st of January 2017 till the end of 2019 the company sold 1577 cars.
+Using the menu on the right side you can filter this database to check aggregated data from all 4 tables.
+
 
 Tables in DB:
 
-61 employees:
+60 employees:
   CREATE TABLE employees (
     id INT NOT NULL auto_increment PRIMARY KEY,
     name VARCHAR(100) NOT NULL,

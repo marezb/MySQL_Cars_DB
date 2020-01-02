@@ -14,7 +14,7 @@ class DisplayWindow(ttk.Frame):
     def __init__(self, container, *args, **kwargs):
         super().__init__(container, *args, **kwargs)
 
-        self.num_of_rows = tk.StringVar(value=40)
+        self.num_of_rows = tk.StringVar(value=100)
 
         self.start_year = tk.StringVar(value=2017)
         self.start_month = tk.StringVar(value=1)
@@ -93,6 +93,7 @@ class DisplayWindow(ttk.Frame):
                                text="Start date")
         self.desc2.grid(column=0, row=2, rowspan=2, sticky='ew', padx=15, pady=5)
 
+        ############# description
         self.desc_year = ttk.Label(self.right_side_buttons, text=" year:")
         self.desc_month = ttk.Label(self.right_side_buttons, text="month:")
         self.desc_day = ttk.Label(self.right_side_buttons, text="  day:  ")
@@ -100,12 +101,15 @@ class DisplayWindow(ttk.Frame):
         self.desc_month.grid(column=2, row=2, sticky='ew', padx=15, pady=0)
         self.desc_day.grid(column=3, row=2, sticky='ew', padx=15, pady=0)
 
-        self.entry_start_year = ttk.Entry(self.right_side_buttons, width=4, justify='center',
-                                          textvariable=self.start_year)
-        self.entry_start_month = ttk.Entry(self.right_side_buttons, width=2, justify='center',
-                                           textvariable=self.start_month)
-        self.entry_start_day = ttk.Entry(self.right_side_buttons, width=2, justify='center',
-                                         textvariable=self.start_day)
+        years = (2017, 2018, 2019, 2020)
+        self.entry_start_year = ttk.Combobox(self.right_side_buttons, width=5, justify='center',
+                                             textvariable=self.start_year, values=years)
+        months = tuple(x for x in range(1, 13))
+        self.entry_start_month = ttk.Combobox(self.right_side_buttons, width=3, justify='center',
+                                              textvariable=self.start_month, values=months)
+        days = tuple(x for x in range(1, 32))
+        self.entry_start_day = ttk.Combobox(self.right_side_buttons, width=3, justify='center',
+                                            textvariable=self.start_day, values=days)
         self.entry_start_year.grid(column=1, row=3, sticky='ew', padx=15, pady=5)
         self.entry_start_month.grid(column=2, row=3, sticky='ew', padx=15, pady=5)
         self.entry_start_day.grid(column=3, row=3, sticky='ew', padx=15, pady=5)
@@ -113,37 +117,42 @@ class DisplayWindow(ttk.Frame):
         self.desc3 = ttk.Label(self.right_side_buttons,
                                text="End date")
         self.desc3.grid(column=0, row=4, rowspan=2, sticky='ew', padx=15, pady=5)
-
+        ############# description
         self.desc_end_year = ttk.Label(self.right_side_buttons, text=" year:")
         self.desc_end_month = ttk.Label(self.right_side_buttons, text="month:")
         self.desc_end_day = ttk.Label(self.right_side_buttons, text="  day:  ")
-
         self.desc_end_year.grid(column=1, row=4, sticky='ew', padx=15, pady=0)
         self.desc_end_month.grid(column=2, row=4, sticky='ew', padx=15, pady=0)
         self.desc_end_day.grid(column=3, row=4, sticky='ew', padx=15, pady=0)
 
-        self.entry_end_year = ttk.Entry(self.right_side_buttons, width=4, justify='center',
-                                        textvariable=self.end_year)
-        self.entry_end_month = ttk.Entry(self.right_side_buttons, width=2, justify='center',
-                                         textvariable=self.end_month)
-        self.entry_end_day = ttk.Entry(self.right_side_buttons, width=2, justify='center',
-                                       textvariable=self.end_day)
+        ############# entry
+        self.entry_end_year = ttk.Combobox(self.right_side_buttons, width=4, justify='center',
+                                           textvariable=self.end_year, values=years)
+        self.entry_end_month = ttk.Combobox(self.right_side_buttons, width=3, justify='center',
+                                            textvariable=self.end_month, values=months)
+        self.entry_end_day = ttk.Combobox(self.right_side_buttons, width=3, justify='center',
+                                          textvariable=self.end_day, values=days)
         self.entry_end_year.grid(column=1, row=5, sticky='ew', padx=15, pady=5)
         self.entry_end_month.grid(column=2, row=5, sticky='ew', padx=15, pady=5)
         self.entry_end_day.grid(column=3, row=5, sticky='ew', padx=15, pady=5)
         ########################################################################################
 
         self.button_1 = ttk.Button(self.right_side_buttons, text='Last Transactions', command=self.last_transactions)
-        self.button_2 = ttk.Button(self.right_side_buttons, text='Brand Turnover', command=self.turnover)
+        self.button_2 = ttk.Button(self.right_side_buttons, text='Brand Turnover', command=self.brand_turnover)
+        self.button_3 = ttk.Button(self.right_side_buttons, text='Payment types', command=self.payment_types)
+        self.button_4 = ttk.Button(self.right_side_buttons, text='Employees performance ',
+                                   command=self.employees_performance)
 
-        self.button_1.grid(column=0, row=8, pady=20, padx=15, sticky='ewn', columnspan=4)
-        self.button_2.grid(column=0, row=9, pady=20, padx=15, sticky='ewn', columnspan=4)
+        self.button_1.grid(column=0, row=6, pady=30, padx=15, sticky='ewn', columnspan=4)
+        self.button_2.grid(column=0, row=7, pady=30, padx=15, sticky='ewn', columnspan=4)
+        self.button_3.grid(column=0, row=8, pady=30, padx=15, sticky='ewn', columnspan=4)
+        self.button_4.grid(column=0, row=9, pady=30, padx=15, sticky='ewn', columnspan=4)
 
         self.text.insert(tk.END, application_description, )
 
     # function which connects to database then prints result to text window
 
-    def connect_to_db(self, table_headers, sql_query, description, sql_param_01=None, sql_param_02=None):
+    def connect_to_db(self, table_headers, sql_query, description):
         query_results = list()
         pasw = base64.b64decode("MVRzY25MQkJiSg==").decode("utf-8")
         limit = int(self.num_of_rows.get())
@@ -197,8 +206,20 @@ class DisplayWindow(ttk.Frame):
                            last_transactions_query,
                            last_transactions_query_desc)
 
-    def turnover(self):
+    def brand_turnover(self):
 
         self.connect_to_db(turnover_headers,
                            turnover_query,
                            turnover_query_desc)
+
+    def payment_types(self):
+
+        self.connect_to_db(payment_headers,
+                           payment_query,
+                           payment_query_desc)
+
+    def employees_performance(self):
+
+        self.connect_to_db(employees_headers,
+                           employees_guery,
+                           employees_query_desc)

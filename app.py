@@ -17,7 +17,7 @@ class WestCoastCars(tk.Tk):
         super().__init__(*args, **kwargs)
         self.title('West Coast Cars')
 
-        self.geometry("1900x900+10+20")
+        self.geometry("1900x1000+10+20")
         self.minsize(1100, 800)
         self.columnconfigure(0, weight=1)
         self.rowconfigure(0, weight=1)
@@ -32,5 +32,6 @@ class WestCoastCars(tk.Tk):
 
 
 root = WestCoastCars()
+
 
 root.mainloop()
