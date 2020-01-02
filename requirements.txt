@@ -1,3 +1,3 @@
-mysql-connector==2.2.9
+mysql-connector==2.2.9 # to connect wity mysql database
 mysql-connector-python==8.0.18 #for correct data presentation
-tabulate==0.8.6
+tabulate==0.8.6 #to present data in table form

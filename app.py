@@ -5,7 +5,6 @@ from main_window import DisplayWindow
 # -- Windows only configuration --
 try:
     from ctypes import windll
-
     windll.shcore.SetProcessDpiAwareness(1)
 except:
     pass
